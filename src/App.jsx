@@ -1,27 +1,23 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
-import { useEffect } from "react";
 
-const getDaysInMonth = (year, month) => {
-  return new Date(year, month + 1, 0).getDate();
-};
+const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
 
 const App = () => {
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
-  const days = getDaysInMonth(year, month);
   const [data, setData] = useState([]);
 
-useEffect(() => {
-  const days = getDaysInMonth(year, month);
-  setData(
-    Array.from({ length: days }, (_, i) => ({
-      date: i + 1,
-      classes: Array(7).fill(""),
-    }))
-  );
-}, [month, year]);
+  useEffect(() => {
+    const days = getDaysInMonth(year, month);
+    setData(
+      Array.from({ length: days }, (_, i) => ({
+        date: i + 1,
+        classes: Array(7).fill(""),
+      }))
+    );
+  }, [month, year]);
 
   const handleInput = (dayIdx, classIdx, value) => {
     const newData = [...data];
@@ -61,7 +57,7 @@ useEffect(() => {
 
     const totalRow = [
       "Total",
-      ...[...Array(7)].map((_, i) => totalByColumn(i)),
+      ...Array.from({ length: 7 }, (_, i) => totalByColumn(i)),
       totalRange(0, 4),
       totalRange(5, 6),
     ];
@@ -75,7 +71,6 @@ useEffect(() => {
     const monthName = new Date(year, month).toLocaleString("default", {
       month: "long",
     });
-  
     const fileName = `attendance_report_${monthName}_${year}.pdf`;
     doc.save(fileName);
   };
@@ -86,18 +81,21 @@ useEffect(() => {
         Class Attendance Tracker
       </h1>
 
-      {/* Month-Year Input */}
+      {/* Month-Year Selector */}
       <div className="flex flex-col sm:flex-row items-center gap-4 mb-4">
         <div>
           <label className="block text-sm font-semibold">Month:</label>
-          <input
-            type="number"
-            value={month + 1}
-            min={1}
-            max={12}
-            onChange={(e) => setMonth(Number(e.target.value) - 1)}
-            className="border p-1 w-24 sm:w-auto"
-          />
+          <select
+            value={month}
+            onChange={(e) => setMonth(Number(e.target.value))}
+            className="border p-1 w-32"
+          >
+            {Array.from({ length: 12 }, (_, i) => (
+              <option key={i} value={i}>
+                {new Date(0, i).toLocaleString("default", { month: "long" })}
+              </option>
+            ))}
+          </select>
         </div>
         <div>
           <label className="block text-sm font-semibold">Year:</label>
@@ -105,7 +103,7 @@ useEffect(() => {
             type="number"
             value={year}
             onChange={(e) => setYear(Number(e.target.value))}
-            className="border p-1 w-24 sm:w-auto"
+            className="border p-1 w-24"
           />
         </div>
       </div>
@@ -133,6 +131,7 @@ useEffect(() => {
                   <td key={classIdx} className="border px-2 py-1">
                     <input
                       type="number"
+                      min="0"
                       value={val}
                       onChange={(e) =>
                         handleInput(dayIdx, classIdx, e.target.value)
