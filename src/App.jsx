@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import { useEffect } from "react";
 
 const getDaysInMonth = (year, month) => {
   return new Date(year, month + 1, 0).getDate();
@@ -10,13 +11,17 @@ const App = () => {
   const [month, setMonth] = useState(new Date().getMonth());
   const [year, setYear] = useState(new Date().getFullYear());
   const days = getDaysInMonth(year, month);
+  const [data, setData] = useState([]);
 
-  const [data, setData] = useState(
+useEffect(() => {
+  const days = getDaysInMonth(year, month);
+  setData(
     Array.from({ length: days }, (_, i) => ({
       date: i + 1,
       classes: Array(7).fill(""),
     }))
   );
+}, [month, year]);
 
   const handleInput = (dayIdx, classIdx, value) => {
     const newData = [...data];
